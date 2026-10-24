@@ -132,7 +132,6 @@
                 </div>
 
                 <nav class="flex space-x-1 space-x-reverse overflow-x-auto custom-scrollbar pb-2 text-sm font-semibold border-t border-slate-800 pt-2" id="mainNav">
-                    <!-- Nav buttons dynamically injected -->
                 </nav>
             </div>
         </header>
@@ -398,7 +397,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tripsTableBody" class="divide-y divide-slate-100 text-slate-700">
-                                    <!-- Dynamic content -->
                                 </tbody>
                             </table>
                         </div>
@@ -842,7 +840,19 @@
         let tripSheets = [];
         let fuelLogs = [];
         let fuelPrices = [];
-        let systemUsers = [];
+        
+        // Pre-populate admin locally to ensure instant login fallback even before cloud sync completes
+        let systemUsers = [
+            {
+                id: 'usr-admin',
+                code: 'EMP-000',
+                name: 'المدير العام',
+                username: 'admin',
+                password: 'admin123',
+                role: 'Admin',
+                permissions: { trips: true, fuel: true, fleet: true, drivers: true, reports: true, users: true }
+            }
+        ];
 
         function generateInitialFleet() {
             const list = [];
@@ -979,6 +989,7 @@
                     if (snap.empty) {
                         const seed = generateInitialUsers();
                         seed.forEach(u => setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'users', u.id), u));
+                        systemUsers = seed;
                     } else {
                         systemUsers = snap.docs.map(d => d.data());
                         renderUsersTable();
