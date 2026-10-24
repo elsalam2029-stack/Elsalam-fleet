@@ -111,6 +111,11 @@
                     </div>
 
                     <div class="flex items-center gap-3">
+                        <button onclick="forceSyncFleetAndDrivers()" class="hidden md:flex items-center gap-1.5 text-xs bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/40 transition">
+                            <i class="fa-solid fa-rotate text-amber-400"></i>
+                            <span>تحديث بيانات الأسطول والسائقين بالسحابة</span>
+                        </button>
+
                         <div id="connectionStatus" class="hidden md:flex items-center gap-2 text-xs bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span>متصل بالسحابة</span>
@@ -847,8 +852,6 @@
     <!-- Application Script Engine -->
     <script>
         let currentUser = null;
-        let vehicles = [];
-        let drivers = [];
         let tripSheets = [];
         let fuelLogs = [];
         let fuelPrices = [];
@@ -1059,6 +1062,10 @@
             });
         }
 
+        // Initialize local variables immediately with full data fallback
+        let vehicles = generateInitialFleet();
+        let drivers = generateInitialDrivers();
+
         function generateInitialFuelPrices() {
             return [
                 { id: 'FP-1', date: '2026-01-01', type: 'سولار', price: 10.00 },
@@ -1093,6 +1100,33 @@
                 });
             }
             return users;
+        }
+
+        // Immediate initial local render
+        window.addEventListener('DOMContentLoaded', () => {
+            renderVehicles();
+            renderDrivers();
+            populateDropdowns();
+            updateDashboardStats();
+        });
+
+        async function forceSyncFleetAndDrivers() {
+            if (!confirm("هل تريد إعادة المزامنة وإدراج كافة السيارات السائقين الجدد بالسحابة؟")) return;
+            try {
+                const fleetSeed = generateInitialFleet();
+                const drvSeed = generateInitialDrivers();
+
+                for (const v of fleetSeed) {
+                    await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'vehicles', v.id), v);
+                }
+                for (const d of drvSeed) {
+                    await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'drivers', d.id), d);
+                }
+                alert("تم تحديث كافة السيارات والسائقين في السحابة بنجاح!");
+            } catch (err) {
+                console.error("Sync error:", err);
+                alert("حدث خطأ أثناء المزامنة السحابية.");
+            }
         }
 
         window.addEventListener('firebase-ready', async () => {
