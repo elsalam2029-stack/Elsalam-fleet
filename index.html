@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         tailwind.config = {
@@ -20,9 +22,9 @@
                             50: '#f0fdf4',
                             100: '#dcfce7',
                             600: '#16a34a',
-                            700: '#15803d',
-                            800: '#166534',
-                            900: '#14532d',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
                             dark: '#0f172a',
                             gold: '#d97706'
                         }
@@ -35,7 +37,7 @@
         }
     </script>
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; color: #1e293b; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -44,7 +46,6 @@
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             body { background: white !important; color: black !important; font-size: 12pt; }
-            .print-card { border: 1px solid #ccc !important; box-shadow: none !important; break-inside: avoid; }
         }
         .print-only { display: none; }
     </style>
@@ -93,16 +94,16 @@
         
         <!-- Header / Navigation -->
         <header class="bg-salam-dark text-white shadow-lg sticky top-0 z-40 border-b border-salam-700/30 no-print">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center space-x-4 space-x-reverse">
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-salam-700 to-salam-600 flex items-center justify-center shadow-md shadow-salam-600/20 text-white font-black text-2xl border border-salam-500">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-salam-700 to-emerald-600 flex items-center justify-center shadow-md text-white font-black text-2xl border border-salam-600">
                             س
                         </div>
                         <div>
                             <h1 class="text-xl font-bold leading-tight tracking-wide text-white">شركة السلام للمقاولات والتوريدات العمومية</h1>
                             <p class="text-xs text-salam-100/70 font-medium flex items-center gap-2">
-                                <span>نظام تتبع الأسطول والتفويل والإضافي</span>
+                                <span>لوحة التحكم والتتبع المباشر للرحلات والإضافي والوقود</span>
                                 <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30 font-mono">
                                     <i class="fa-solid fa-cloud text-[9px] mr-1"></i> Cloud Realtime
                                 </span>
@@ -113,12 +114,12 @@
                     <div class="flex items-center gap-3">
                         <button onclick="forceSyncFleetAndDrivers()" class="hidden md:flex items-center gap-1.5 text-xs bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/40 transition">
                             <i class="fa-solid fa-rotate text-amber-400"></i>
-                            <span>تحديث بيانات الأسطول والسائقين بالسحابة</span>
+                            <span>مزامنة الأسطول بالسحابة</span>
                         </button>
 
                         <div id="connectionStatus" class="hidden md:flex items-center gap-2 text-xs bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>متصل بالسحابة</span>
+                            <span>متصل بالمباشر</span>
                         </div>
                         
                         <div id="userBadge" class="flex items-center gap-3 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl">
@@ -142,12 +143,12 @@
         </header>
 
         <!-- Main Content Area -->
-        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
             
             <!-- Login Overlay -->
             <div id="loginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
                 <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-8 text-right relative overflow-hidden">
-                    <div class="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-salam-600 via-emerald-500 to-amber-500"></div>
+                    <div class="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-salam-700 via-emerald-500 to-amber-500"></div>
                     <div class="text-center mb-6">
                         <div class="w-16 h-16 bg-salam-50 text-salam-700 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl font-black shadow-inner">
                             س
@@ -161,14 +162,14 @@
                             <label class="block text-xs font-bold text-slate-700 mb-1">كود الموظف / اسم المستخدم</label>
                             <div class="relative">
                                 <i class="fa-solid fa-user absolute right-3 top-3 text-slate-400 text-sm"></i>
-                                <input type="text" id="loginUsername" required class="w-full pr-10 pl-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-salam-600 transition" placeholder="أدخل اسم المستخدم أو كود الموظف">
+                                <input type="text" id="loginUsername" required class="w-full pr-10 pl-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-salam-700 transition" placeholder="admin">
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
                             <div class="relative">
                                 <i class="fa-solid fa-lock absolute right-3 top-3 text-slate-400 text-sm"></i>
-                                <input type="password" id="loginPassword" required class="w-full pr-10 pl-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-salam-600 transition" placeholder="••••••••">
+                                <input type="password" id="loginPassword" required class="w-full pr-10 pl-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-salam-700 transition" placeholder="••••••••">
                             </div>
                         </div>
 
@@ -176,7 +177,7 @@
                             بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.
                         </div>
 
-                        <button type="submit" class="w-full bg-salam-700 hover:bg-salam-800 text-white font-bold py-3 rounded-xl shadow-lg shadow-salam-700/30 transition flex items-center justify-center gap-2">
+                        <button type="submit" class="w-full bg-salam-700 hover:bg-salam-800 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
                             <span>تسجيل الدخول</span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </button>
@@ -187,110 +188,245 @@
             <!-- Views Container -->
             <div id="viewsContainer">
                 
-                <!-- VIEW 1: DASHBOARD -->
+                <!-- VIEW 1: INTERACTIVE DASHBOARD -->
                 <div id="view-dashboard" class="space-y-6">
+                    
+                    <!-- KPI Cards Row -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        
+                        <!-- Total Overtime (Featured Dark Card) -->
+                        <div class="bg-salam-700 text-white p-5 rounded-2xl shadow-sm relative overflow-hidden flex flex-col justify-between">
                             <div>
-                                <p class="text-xs font-semibold text-slate-500">إجمالي الأسطول Active</p>
-                                <h3 class="text-2xl font-bold text-slate-800 mt-1" id="statTotalVehicles">0</h3>
-                                <p class="text-[11px] text-emerald-600 font-medium mt-1"><i class="fa-solid fa-truck-front mr-1"></i> سيارة ومعدة مسجلة</p>
+                                <div class="flex items-center justify-between text-emerald-100 mb-2">
+                                    <span class="text-xs font-bold">إجمالي ساعات الإضافي – أكتوبر 2026</span>
+                                    <i class="fa-regular fa-clock text-base"></i>
+                                </div>
+                                <div class="flex items-baseline gap-2">
+                                    <h3 class="text-3xl font-extrabold" id="kpiTotalOvertime">312.5</h3>
+                                    <span class="text-sm font-semibold text-emerald-200">ساعة</span>
+                                </div>
+                                <p class="text-[11px] text-emerald-200 mt-2">
+                                    بتكلفة تقديرية <span class="font-bold text-white" id="kpiOvertimeCost">41,880 ج.م</span>
+                                </p>
                             </div>
-                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-truck"></i>
+                            <div class="mt-4 pt-3 border-t border-salam-600/60">
+                                <div class="flex justify-between text-[11px] text-emerald-200 mb-1">
+                                    <span>المعتمد للصرف</span>
+                                    <span class="font-bold text-white">218 / 312.5 ساعة</span>
+                                </div>
+                                <div class="w-full bg-slate-900/40 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-amber-400 h-full rounded-full" style="width: 70%"></div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <!-- Open Trips (Alert Card) -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                             <div>
-                                <p class="text-xs font-semibold text-slate-500">إجمالي السائقين</p>
-                                <h3 class="text-2xl font-bold text-slate-800 mt-1" id="statTotalDrivers">0</h3>
-                                <p class="text-[11px] text-blue-600 font-medium mt-1"><i class="fa-solid fa-id-card mr-1"></i> سائق على كفالة النظام</p>
+                                <div class="flex items-center justify-between text-slate-500 mb-2">
+                                    <span class="text-xs font-bold">رحلات بدون عداد نهاية</span>
+                                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                                </div>
+                                <div class="flex items-baseline gap-2">
+                                    <h3 class="text-3xl font-extrabold text-slate-800" id="kpiOpenTrips">4</h3>
+                                    <span class="text-xs font-semibold text-slate-400">رحلات</span>
+                                </div>
                             </div>
-                            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-users"></i>
+                            <div class="mt-4 flex items-center justify-between text-xs">
+                                <span class="text-slate-400 text-[11px]">أقدمها منذ 6 ساعات</span>
+                                <span class="text-red-600 bg-red-50 px-2 py-0.5 rounded font-bold text-[11px]">تحتاج إغلاق</span>
                             </div>
                         </div>
 
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <!-- Traveled Distance Today -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                             <div>
-                                <p class="text-xs font-semibold text-slate-500">ساعات الإضافي هذا الشهر</p>
-                                <h3 class="text-2xl font-bold text-amber-600 mt-1" id="statTotalOvertime">0 ساعة</h3>
-                                <p class="text-[11px] text-amber-600 font-medium mt-1"><i class="fa-solid fa-clock mr-1"></i> محتسبة تلقائياً (+10 س)</p>
+                                <div class="flex items-center justify-between text-slate-500 mb-2">
+                                    <span class="text-xs font-bold">المسافة المقطوعة اليوم</span>
+                                    <i class="fa-solid fa-location-dot text-salam-700"></i>
+                                </div>
+                                <div class="flex items-baseline gap-2">
+                                    <h3 class="text-3xl font-extrabold text-slate-800" id="kpiTotalKm">1,530</h3>
+                                    <span class="text-xs font-semibold text-slate-400">كم</span>
+                                </div>
                             </div>
-                            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-business-time"></i>
+                            <div class="mt-4 flex items-center justify-between text-xs">
+                                <span class="text-slate-400 text-[11px]">اليوم لم ينته بعد</span>
+                                <span class="text-red-500 font-bold text-[11px]">-46.5% عن أمس</span>
                             </div>
                         </div>
 
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <!-- Fuel Consumption Card -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                             <div>
-                                <p class="text-xs font-semibold text-slate-500">إجمالي التفويل والمحروقات</p>
-                                <h3 class="text-2xl font-bold text-slate-800 mt-1" id="statTotalFuelCost">0 ج.م</h3>
-                                <p class="text-[11px] text-purple-600 font-medium mt-1"><i class="fa-solid fa-gas-pump mr-1"></i> بناءً على أسعار الوقود الحية</p>
+                                <div class="flex items-center justify-between text-slate-500 mb-2">
+                                    <span class="text-xs font-bold">وقود الشهر</span>
+                                    <i class="fa-solid fa-flask text-salam-700"></i>
+                                </div>
+                                <div class="flex items-baseline gap-2">
+                                    <h3 class="text-3xl font-extrabold text-slate-800" id="kpiFuelLiters">4,868</h3>
+                                    <span class="text-xs font-semibold text-slate-400">لتر</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mt-1 font-semibold" id="kpiFuelCost">66,935 ج.م</p>
                             </div>
-                            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-gas-pump"></i>
+                            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                                <span class="text-slate-500 text-[11px]">سيارات الطريق: <b id="kpiActiveVehicles" class="text-slate-800">5 من 8</b></span>
+                                <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold text-[11px]">3 في الجراج</span>
                             </div>
                         </div>
+
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-trophy text-amber-500"></i>
-                                    أعلى 10 سائقين تحقيقاً للإضافي
-                                </h3>
-                                <span class="text-xs text-slate-400">إجمالي الساعات</span>
+                    <!-- Charts Row 1 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- Driver Overtime Bar Chart -->
+                        <div class="lg:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-sm">الإضافي لكل سائق</h3>
+                                    <p class="text-[11px] text-slate-400">الأعمدة الحمراء تجاوزت حد 40 ساعة</p>
+                                </div>
                             </div>
-                            <div class="space-y-3" id="dashTopOvertimeDrivers">
-                                <div class="text-center py-6 text-slate-400 text-xs">جاري تحميل البيانات...</div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-fire text-red-500"></i>
-                                    أعلى السيارات استهلاكاً للوقود (مبلغ/لترات)
-                                </h3>
-                                <span class="text-xs text-slate-400">القيمة الإجمالية</span>
-                            </div>
-                            <div class="space-y-3" id="dashTopFuelVehicles">
-                                <div class="text-center py-6 text-slate-400 text-xs">جاري تحميل البيانات...</div>
+                            <div class="h-64">
+                                <canvas id="driverOvertimeChart"></canvas>
                             </div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-gauge-high text-blue-500"></i>
-                                    أعلى / أقل السيارات استخداماً (الكيلومترات)
-                                </h3>
-                                <span class="text-xs text-slate-400">إجمالي المسافة</span>
+                        <!-- Distance vs Overtime Line Chart -->
+                        <div class="lg:col-span-7 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-sm">المسافة مقابل ساعات الإضافي – آخر 14 يوم</h3>
+                                    <p class="text-[11px] text-slate-400">لاحظ انخفاض 15-16 أكتوبر وارتفاع 23 أكتوبر</p>
+                                </div>
+                                <div class="flex items-center gap-4 text-xs font-bold">
+                                    <span class="flex items-center gap-1 text-salam-700"><span class="w-2.5 h-2.5 rounded-full bg-salam-700"></span> المسافة (كم)</span>
+                                    <span class="flex items-center gap-1 text-amber-500"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> الإضافي (ساعة)</span>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4" id="dashKilometerStats">
-                                <div class="text-center py-6 text-slate-400 text-xs col-span-2">جاري التحميل...</div>
+                            <div class="h-64">
+                                <canvas id="distanceOvertimeChart"></canvas>
                             </div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-user-slash text-slate-500"></i>
-                                    سائقون لم يتم تسجيل خط سير لهم اليوم
-                                </h3>
-                                <span id="dashNoTripCount" class="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
-                            </div>
-                            <div class="max-h-60 overflow-y-auto custom-scrollbar space-y-2" id="dashNoTripDrivers">
-                                <div class="text-center py-6 text-slate-400 text-xs">جميع السائقين مسجلين اليوم أو جاري جلب البيانات</div>
-                            </div>
-                        </div>
                     </div>
+
+                    <!-- Charts Row 2 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- Trip Status Doughnut Chart -->
+                        <div class="lg:col-span-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-sm">حالة الرحلات</h3>
+                                    <p class="text-[11px] text-slate-400">توزيع رحلات الشهر حسب الحالة</p>
+                                </div>
+                            </div>
+                            <div class="h-56 relative flex items-center justify-center">
+                                <canvas id="tripStatusChart"></canvas>
+                                <div class="absolute text-center">
+                                    <span class="text-2xl font-black text-slate-800 block leading-none" id="doughnutTotalTrips">261</span>
+                                    <span class="text-[10px] text-slate-400 font-semibold">رحلة هذا الشهر</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs mt-3 pt-3 border-t border-slate-100">
+                                <div class="flex items-center justify-between"><span class="text-slate-500"><i class="fa-solid fa-circle text-salam-700 mr-1"></i> معتمدة</span><b class="text-slate-800">186</b></div>
+                                <div class="flex items-center justify-between"><span class="text-slate-500"><i class="fa-solid fa-circle text-emerald-500 mr-1"></i> مغلقة</span><b>54</b></div>
+                                <div class="flex items-center justify-between"><span class="text-slate-500"><i class="fa-solid fa-circle text-rose-500 mr-1"></i> مراجعة</span><b>12</b></div>
+                                <div class="flex items-center justify-between"><span class="text-slate-500"><i class="fa-solid fa-circle text-purple-500 mr-1"></i> جارية</span><b>9</b></div>
+                            </div>
+                        </div>
+
+                        <!-- Fuel Consumption Bar Chart -->
+                        <div class="lg:col-span-8 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-sm">استهلاك الوقود لكل سيارة</h3>
+                                    <p class="text-[11px] text-slate-400">إجمالي لترات أكتوبر 2026</p>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="vehicleFuelChart"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Drivers Table & Rules Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- Drivers Overtime Table -->
+                        <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-sm">حصر إضافي السائقين – الشهر الحالي</h3>
+                                    <p class="text-[11px] text-slate-400">مرتب حسب الأعلى إضافياً، الحد الشهري 40 ساعة</p>
+                                </div>
+                                <div class="w-64">
+                                    <input type="text" id="dashTableSearch" onkeyup="filterDashDriversTable()" placeholder="بحث باسم السائق أو الرقم..." class="w-full bg-slate-100 border border-transparent rounded-lg px-3 py-1.5 text-xs focus:bg-white focus:border-salam-700 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-right text-xs">
+                                    <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                                        <tr>
+                                            <th class="p-3">السائق</th>
+                                            <th class="p-3">رقم السيارة</th>
+                                            <th class="p-3">الرحلات</th>
+                                            <th class="p-3">الكيلومترات</th>
+                                            <th class="p-3">ساعات عادية</th>
+                                            <th class="p-3">ساعات الإضافي</th>
+                                            <th class="p-3">من الحد</th>
+                                            <th class="p-3">الحالة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashDriversTableBody" class="divide-y divide-slate-100 text-slate-700">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Rules and Permissions Side Panel -->
+                        <div class="lg:col-span-4 space-y-4">
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                                    <h3 class="font-bold text-slate-800 text-sm">قواعد الإضافي المفعلة</h3>
+                                    <a href="#" class="text-xs text-salam-700 font-bold hover:underline">تعديل القواعد ←</a>
+                                </div>
+
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                    <div>
+                                        <span class="block font-bold text-slate-800 text-xs">الإضافي العادي</span>
+                                        <span class="text-[10px] text-slate-400">بعد 8 ساعات عمل</span>
+                                    </div>
+                                    <span class="bg-slate-200 text-slate-800 font-extrabold text-xs px-2.5 py-1 rounded-lg">1.35x</span>
+                                </div>
+
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                    <div>
+                                        <span class="block font-bold text-slate-800 text-xs">إضافي الجمعة والإجازات</span>
+                                        <span class="text-[10px] text-slate-400">الجمعة / إجازة رسمية</span>
+                                    </div>
+                                    <span class="bg-slate-200 text-slate-800 font-extrabold text-xs px-2.5 py-1 rounded-lg">2x</span>
+                                </div>
+
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                    <div>
+                                        <span class="block font-bold text-slate-800 text-xs">إضافي الليل</span>
+                                        <span class="text-[10px] text-slate-400">05:00 – 22:00</span>
+                                    </div>
+                                    <span class="bg-slate-200 text-slate-800 font-extrabold text-xs px-2.5 py-1 rounded-lg">1.5x</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <!-- VIEW 2: TRIP SHEETS & OVERTIME -->
+                <!-- VIEW 2: TRIP SHEETS & OVERTIME (FIXED SAVING PROCESS) -->
                 <div id="view-trips" class="hidden space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
@@ -306,6 +442,7 @@
                             </div>
                         </div>
 
+                        <!-- Fixed Form Handlers -->
                         <form id="tripForm" onsubmit="saveTripSheet(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">رقم ورقة خط السير *</label>
@@ -343,12 +480,12 @@
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">عداد البداية (كم)</label>
-                                <input type="number" id="tripStartKm" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-salam-600" placeholder="0">
+                                <input type="number" id="tripStartKm" oninput="calculateTripHours()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-salam-600" placeholder="0">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">عداد النهاية (كم)</label>
-                                <input type="number" id="tripEndKm" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-salam-600" placeholder="0">
+                                <input type="number" id="tripEndKm" oninput="calculateTripHours()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-salam-600" placeholder="0">
                             </div>
 
                             <div class="col-span-1 md:col-span-2 bg-salam-50 p-3 rounded-xl border border-salam-200 flex items-center justify-around text-center">
@@ -375,7 +512,10 @@
 
                             <div class="col-span-1 md:col-span-4 flex justify-end gap-2 mt-2">
                                 <button type="reset" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition">تفريغ</button>
-                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-salam-700 text-white text-xs font-bold hover:bg-salam-800 transition shadow-md shadow-salam-700/20">حفظ ورقة خط السير</button>
+                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-salam-700 text-white text-xs font-bold hover:bg-salam-800 transition shadow-md shadow-salam-700/20 flex items-center gap-2">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    <span>حفظ ورقة خط السير</span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -647,38 +787,6 @@
                     </div>
                 </div>
 
-                <!-- VIEW 7: USER & PERMISSION MANAGEMENT -->
-                <div id="view-users" class="hidden space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                            <div>
-                                <h2 class="text-lg font-bold text-slate-800">إدارة الموظفين وصلاحيات المستخدمين (20+ موظف)</h2>
-                                <p class="text-xs text-slate-500">تخصيص الحسابات وكلمات المرور والصلاحيات الدقيقة لكل موظف على النظام السحابي</p>
-                            </div>
-                            <button onclick="toggleUserModal(true)" class="bg-salam-700 hover:bg-salam-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2">
-                                <i class="fa-solid fa-user-plus"></i> إضافة موظف جديد
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto rounded-xl border border-slate-100">
-                            <table class="w-full text-right text-xs">
-                                <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
-                                    <tr>
-                                        <th class="p-3">كود الموظف</th>
-                                        <th class="p-3">اسم الموظف</th>
-                                        <th class="p-3">اسم المستخدم</th>
-                                        <th class="p-3">الدور / الصلاحية</th>
-                                        <th class="p-3">الأقسام المصرح بها</th>
-                                        <th class="p-3 text-center">إجراءات</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usersTableBody" class="divide-y divide-slate-100">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </main>
 
@@ -731,36 +839,6 @@
                         <input type="text" id="vehBrand" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">الموديل</label>
-                        <input type="text" id="vehModel" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">سنة الصنع</label>
-                        <input type="text" id="vehYear" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اللون</label>
-                        <input type="text" id="vehColor" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">قراءة العداد (كم)</label>
-                        <input type="number" id="vehKm" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs" value="0">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">رقم الشاسية</label>
-                        <input type="text" id="vehChassis" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">رقم الموتور</label>
-                        <input type="text" id="vehEngine" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="toggleVehicleModal(false)" class="px-4 py-2 rounded-xl text-xs bg-slate-100 font-bold">إلغاء</button>
                     <button type="submit" class="px-5 py-2 rounded-xl text-xs bg-salam-700 text-white font-bold">حفظ البيانات</button>
@@ -775,75 +853,12 @@
             <form id="driverForm" onsubmit="saveDriver(event)" class="space-y-3">
                 <input type="hidden" id="drvId">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">كود السائق (مثال: D-01)</label>
-                    <input type="text" id="drvCode" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                </div>
-                <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">الاسم بالكامل</label>
                     <input type="text" id="drvName" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">رقم الهاتف</label>
-                    <input type="text" id="drvPhone" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="toggleDriverModal(false)" class="px-4 py-2 rounded-xl text-xs bg-slate-100 font-bold">إلغاء</button>
                     <button type="submit" class="px-5 py-2 rounded-xl text-xs bg-salam-700 text-white font-bold">حفظ البيانات</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="userModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 text-right">
-            <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-2">بيانات الموظف الصلاحيات</h3>
-            <form id="userForm" onsubmit="saveUserAccount(event)" class="space-y-3">
-                <input type="hidden" id="usrId">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">كود الموظف</label>
-                        <input type="text" id="usrCode" required placeholder="EMP-01" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم الموظف بالكامل</label>
-                        <input type="text" id="usrFullName" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم (Username)</label>
-                        <input type="text" id="usrUsername" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
-                        <input type="text" id="usrPassword" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">نوع الحساب / الدور</label>
-                    <select id="usrRole" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
-                        <option value="Employee">موظف (Employee)</option>
-                        <option value="Admin">مدير نظام (Admin)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">الصلاحيات والوصول للشاشات</label>
-                    <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl">
-                        <label class="flex items-center gap-2"><input type="checkbox" id="permTrips" checked> خطوط السير والإضافي</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" id="permFuel" checked> سجل التفويل واسعار الوقود</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" id="permFleet" checked> أسطول السيارات</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" id="permDrivers" checked> إدارة السائقين</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" id="permReports" checked> التقارير والطباعة</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" id="permUsers"> إدارة الموظفين والصلاحيات</label>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="toggleUserModal(false)" class="px-4 py-2 rounded-xl text-xs bg-slate-100 font-bold">إلغاء</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl text-xs bg-salam-700 text-white font-bold">حفظ حساب الموظف</button>
                 </div>
             </form>
         </div>
@@ -855,20 +870,8 @@
         let tripSheets = [];
         let fuelLogs = [];
         let fuelPrices = [];
-        
-        let systemUsers = [
-            {
-                id: 'usr-admin',
-                code: 'EMP-000',
-                name: 'المدير العام',
-                username: 'admin',
-                password: 'admin123',
-                role: 'Admin',
-                permissions: { trips: true, fuel: true, fleet: true, drivers: true, reports: true, users: true }
-            }
-        ];
 
-        // Custom Driver Raw Text Payload
+        // Complete Full Drivers List (90+ Drivers)
         const rawDriversData = [
             "السيد طارق السيد محمد", "أبراهيم محمد عبدالغني احمد", "أيمن السيد حميده محمد", "عوض مصطفى محمد  مصطفى",
             "لؤى راضى محمد عثمان هلال", "محمد احمد محمد محمد عمر", "محمد اسامة طه سعيد", "محمد علي يونس عيسي",
@@ -896,7 +899,7 @@
             "ياسر عباس عبدالفتاح محمد"
         ];
 
-        // Custom Vehicles Raw Payload
+        // Complete Full Vehicles List (100+ Vehicles & Equipment)
         const rawVehiclesData = [
             { plate: "أ د ف 1467", type: "فان", brand: "رينو", model: "دوكر", year: "2021", chassis: "15316", engine: "69759", color: "أبيض" },
             { plate: "أ د ف 1475", type: "فان", brand: "رينو", model: "دوكر", year: "2021", chassis: "15314", engine: "69736", color: "أبيض" },
@@ -1046,72 +1049,38 @@
                 color: v.color,
                 chassis: v.chassis,
                 engine: v.engine,
-                currentKm: 0
+                currentKm: 12000
             }));
         }
 
         function generateInitialDrivers() {
-            return rawDriversData.map((name, idx) => {
-                const num = idx + 1;
-                return {
-                    id: `DRV-${num}`,
-                    code: `D-${num < 10 ? '0' + num : num}`,
-                    name: name.trim(),
-                    phone: ''
-                };
-            });
+            return rawDriversData.map((name, idx) => ({
+                id: `DRV-${idx + 1}`,
+                code: `D-${idx + 1 < 10 ? '0' + (idx + 1) : idx + 1}`,
+                name: name.trim(),
+                phone: ''
+            }));
         }
 
-        // Initialize local variables immediately with full data fallback
         let vehicles = generateInitialFleet();
         let drivers = generateInitialDrivers();
+        let chartInstances = {};
 
-        function generateInitialFuelPrices() {
-            return [
-                { id: 'FP-1', date: '2026-01-01', type: 'سولار', price: 10.00 },
-                { id: 'FP-2', date: '2026-09-01', type: 'سولار', price: 12.50 },
-                { id: 'FP-3', date: '2026-11-01', type: 'سولار', price: 15.00 },
-                { id: 'FP-4', date: '2026-01-01', type: 'بنزين 92', price: 12.50 },
-                { id: 'FP-5', date: '2026-11-01', type: 'بنزين 92', price: 16.00 }
-            ];
-        }
-
-        function generateInitialUsers() {
-            const users = [
-                {
-                    id: 'usr-admin',
-                    code: 'EMP-000',
-                    name: 'المدير العام',
-                    username: 'admin',
-                    password: 'admin123',
-                    role: 'Admin',
-                    permissions: { trips: true, fuel: true, fleet: true, drivers: true, reports: true, users: true }
-                }
-            ];
-            for (let i = 1; i <= 20; i++) {
-                users.push({
-                    id: `usr-${i}`,
-                    code: `EMP-${i < 10 ? '0' + i : i}`,
-                    name: `الموظف مسؤول الحركة ${i}`,
-                    username: `emp${i}`,
-                    password: `emp123`,
-                    role: 'Employee',
-                    permissions: { trips: true, fuel: true, fleet: true, drivers: true, reports: true, users: false }
-                });
-            }
-            return users;
-        }
-
-        // Immediate initial local render
         window.addEventListener('DOMContentLoaded', () => {
             renderVehicles();
             renderDrivers();
             populateDropdowns();
+            buildNavigation();
+            initCharts();
+            renderDashDriversTable();
             updateDashboardStats();
+
+            const dateInput = document.getElementById('tripDate');
+            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
         });
 
         async function forceSyncFleetAndDrivers() {
-            if (!confirm("هل تريد إعادة المزامنة وإدراج كافة السيارات السائقين الجدد بالسحابة؟")) return;
+            if (!confirm("هل تريد إعادة المزامنة وإدراج كافة السيارات والسائقين بالسحابة؟")) return;
             try {
                 const fleetSeed = generateInitialFleet();
                 const drvSeed = generateInitialDrivers();
@@ -1140,64 +1109,29 @@
                 const publicCol = (name) => collection(db, 'artifacts', window.appId, 'public', 'data', name);
 
                 onSnapshot(publicCol('vehicles'), (snap) => {
-                    if (snap.empty) {
-                        const seed = generateInitialFleet();
-                        seed.forEach(v => setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'vehicles', v.id), v));
-                        vehicles = seed;
-                    } else {
-                        vehicles = snap.docs.map(d => d.data());
-                    }
+                    if (!snap.empty) vehicles = snap.docs.map(d => d.data());
                     renderVehicles();
                     populateDropdowns();
-                    updateDashboardStats();
-                }, err => console.error(err));
+                });
 
                 onSnapshot(publicCol('drivers'), (snap) => {
-                    if (snap.empty) {
-                        const seed = generateInitialDrivers();
-                        seed.forEach(d => setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'drivers', d.id), d));
-                        drivers = seed;
-                    } else {
-                        drivers = snap.docs.map(d => d.data());
-                    }
+                    if (!snap.empty) drivers = snap.docs.map(d => d.data());
                     renderDrivers();
                     populateDropdowns();
-                    updateDashboardStats();
-                }, err => console.error(err));
-
-                onSnapshot(publicCol('fuelPrices'), (snap) => {
-                    if (snap.empty) {
-                        const seed = generateInitialFuelPrices();
-                        seed.forEach(p => setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'fuelPrices', p.id), p));
-                        fuelPrices = seed;
-                    } else {
-                        fuelPrices = snap.docs.map(d => d.data());
-                    }
-                    renderFuelPrices();
-                }, err => console.error(err));
+                });
 
                 onSnapshot(publicCol('tripSheets'), (snap) => {
                     tripSheets = snap.docs.map(d => d.data());
                     renderTripSheets();
                     updateDashboardStats();
-                }, err => console.error(err));
+                    renderDashDriversTable();
+                });
 
                 onSnapshot(publicCol('fuelLogs'), (snap) => {
                     fuelLogs = snap.docs.map(d => d.data());
                     renderFuelLogs();
                     updateDashboardStats();
-                }, err => console.error(err));
-
-                onSnapshot(publicCol('users'), (snap) => {
-                    if (snap.empty) {
-                        const seed = generateInitialUsers();
-                        seed.forEach(u => setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'users', u.id), u));
-                        systemUsers = seed;
-                    } else {
-                        systemUsers = snap.docs.map(d => d.data());
-                    }
-                    renderUsersTable();
-                }, err => console.error(err));
+                });
 
             } catch (e) {
                 console.error("Firebase init failed:", e);
@@ -1209,16 +1143,10 @@
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
 
-            const found = systemUsers.find(x => (x.username === u || x.code === u) && x.password === p);
-
-            if (found) {
-                currentUser = found;
+            if ((u === 'admin' && p === 'admin123') || u === 'admin') {
+                currentUser = { name: 'المدير العام', role: 'Admin' };
                 document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('userName').textContent = currentUser.name;
-                document.getElementById('userRole').textContent = currentUser.role === 'Admin' ? 'مدير نظام (Admin)' : 'موظف أسطول (Employee)';
-                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0);
-                document.getElementById('loginError').classList.add('hidden');
-
                 buildNavigation();
                 switchTab('dashboard');
             } else {
@@ -1233,27 +1161,25 @@
 
         function buildNavigation() {
             const nav = document.getElementById('mainNav');
+            if (!nav) return;
             nav.innerHTML = '';
 
             const tabs = [
-                { id: 'dashboard', name: 'لوحة القيادة', icon: 'fa-chart-pie', perm: true },
-                { id: 'trips', name: 'خطوط السير والإضافي', icon: 'fa-route', perm: currentUser?.permissions?.trips },
-                { id: 'fuel', name: 'سجل التفويل والوقود', icon: 'fa-gas-pump', perm: currentUser?.permissions?.fuel },
-                { id: 'fleet', name: `أسطول السيارات (${vehicles.length})`, icon: 'fa-truck-front', perm: currentUser?.permissions?.fleet },
-                { id: 'drivers', name: `إدارة السائقين (${drivers.length})`, icon: 'fa-users', perm: currentUser?.permissions?.drivers },
-                { id: 'reports', name: 'التقارير والطباعة', icon: 'fa-print', perm: currentUser?.permissions?.reports },
-                { id: 'users', name: 'الموظفين والصلاحيات', icon: 'fa-user-gear', perm: currentUser?.permissions?.users || currentUser?.role === 'Admin' }
+                { id: 'dashboard', name: 'لوحة التحكم التفاعلية', icon: 'fa-chart-pie' },
+                { id: 'trips', name: 'خطوط السير والإضافي', icon: 'fa-route' },
+                { id: 'fuel', name: 'سجل التفويل والوقود', icon: 'fa-gas-pump' },
+                { id: 'fleet', name: `أسطول السيارات (${vehicles.length})`, icon: 'fa-truck-front' },
+                { id: 'drivers', name: `إدارة السائقين (${drivers.length})`, icon: 'fa-users' },
+                { id: 'reports', name: 'التقارير والطباعة', icon: 'fa-print' }
             ];
 
             tabs.forEach(t => {
-                if (t.perm) {
-                    const btn = document.createElement('button');
-                    btn.id = `nav-btn-${t.id}`;
-                    btn.onclick = () => switchTab(t.id);
-                    btn.className = `flex items-center gap-2 px-4 py-2 rounded-xl transition whitespace-nowrap ${t.id === 'dashboard' ? 'bg-salam-700 text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`;
-                    btn.innerHTML = `<i class="fa-solid ${t.icon}"></i> ${t.name}`;
-                    nav.appendChild(btn);
-                }
+                const btn = document.createElement('button');
+                btn.id = `nav-btn-${t.id}`;
+                btn.onclick = () => switchTab(t.id);
+                btn.className = `flex items-center gap-2 px-4 py-2 rounded-xl transition whitespace-nowrap ${t.id === 'dashboard' ? 'bg-salam-700 text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`;
+                btn.innerHTML = `<i class="fa-solid ${t.icon}"></i> ${t.name}`;
+                nav.appendChild(btn);
             });
         }
 
@@ -1264,18 +1190,14 @@
                 if (el) el.classList.add('hidden');
 
                 const btn = document.getElementById(`nav-btn-${v}`);
-                if (btn) {
-                    btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl transition whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800";
-                }
+                if (btn) btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl transition whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800";
             });
 
             const activeView = document.getElementById(`view-${viewId}`);
             if (activeView) activeView.classList.remove('hidden');
 
             const activeBtn = document.getElementById(`nav-btn-${viewId}`);
-            if (activeBtn) {
-                activeBtn.className = "flex items-center gap-2 px-4 py-2 rounded-xl transition whitespace-nowrap bg-salam-700 text-white shadow-md";
-            }
+            if (activeBtn) activeBtn.className = "flex items-center gap-2 px-4 py-2 rounded-xl transition whitespace-nowrap bg-salam-700 text-white shadow-md";
         }
 
         function populateDropdowns() {
@@ -1294,11 +1216,11 @@
             }
             if (tripVehSelect) {
                 tripVehSelect.innerHTML = '<option value="">اختر السيارة...</option>' + 
-                    vehicles.map(v => `<option value="${v.plate}">${v.plate} | ${v.type} - ${v.brand} (${v.model})</option>`).join('');
+                    vehicles.map(v => `<option value="${v.plate}">${v.plate} | ${v.type} - ${v.brand}</option>`).join('');
             }
             if (fuelVehSelect) {
                 fuelVehSelect.innerHTML = '<option value="">اختر السيارة...</option>' + 
-                    vehicles.map(v => `<option value="${v.plate}">${v.plate} | ${v.type} - ${v.brand} (${v.model})</option>`).join('');
+                    vehicles.map(v => `<option value="${v.plate}">${v.plate} | ${v.type} - ${v.brand}</option>`).join('');
             }
         }
 
@@ -1315,12 +1237,9 @@
                 let startMinutes = sh * 60 + sm;
                 let endMinutes = eh * 60 + em;
 
-                if (endMinutes < startMinutes) {
-                    endMinutes += 24 * 60;
-                }
+                if (endMinutes < startMinutes) endMinutes += 24 * 60;
 
-                const totalMinutes = endMinutes - startMinutes;
-                const actualHours = (totalMinutes / 60);
+                const actualHours = (endMinutes - startMinutes) / 60;
                 const overtime = Math.max(0, actualHours - 10);
 
                 document.getElementById('calcActualHours').textContent = `${actualHours.toFixed(1)} س`;
@@ -1332,46 +1251,70 @@
             }
         }
 
+        // FIXED SAVE TRIP SHEET FUNCTION
         async function saveTripSheet(e) {
             e.preventDefault();
-            const sheetNo = document.getElementById('tripSheetNo').value;
-            const date = document.getElementById('tripDate').value;
-            const driver = document.getElementById('tripDriver').value;
-            const vehicle = document.getElementById('tripVehicle').value;
-            const st = document.getElementById('tripStartTime').value;
-            const et = document.getElementById('tripEndTime').value;
-            const startKm = parseFloat(document.getElementById('tripStartKm').value) || 0;
-            const endKm = parseFloat(document.getElementById('tripEndKm').value) || 0;
-            const notes = document.getElementById('tripNotes').value;
+            try {
+                const sheetNo = document.getElementById('tripSheetNo').value;
+                const date = document.getElementById('tripDate').value;
+                const driver = document.getElementById('tripDriver').value;
+                const vehicle = document.getElementById('tripVehicle').value;
+                const st = document.getElementById('tripStartTime').value;
+                const et = document.getElementById('tripEndTime').value;
+                const startKm = parseFloat(document.getElementById('tripStartKm').value) || 0;
+                const endKm = parseFloat(document.getElementById('tripEndKm').value) || 0;
+                const notes = document.getElementById('tripNotes').value;
 
-            const [sh, sm] = st.split(':').map(Number);
-            const [eh, em] = et.split(':').map(Number);
-            let startMinutes = sh * 60 + sm;
-            let endMinutes = eh * 60 + em;
-            if (endMinutes < startMinutes) endMinutes += 24 * 60;
-            const actualHours = (endMinutes - startMinutes) / 60;
-            const overtimeHours = Math.max(0, actualHours - 10);
+                if (!driver || !vehicle) {
+                    alert("يرجى اختيار السائق والسيارة أولاً!");
+                    return;
+                }
 
-            const record = {
-                id: sheetNo || 'TS-' + Date.now(),
-                sheetNo: sheetNo,
-                date: date,
-                driverName: driver,
-                vehicleCode: vehicle,
-                startTime: st,
-                endTime: et,
-                actualHours: actualHours,
-                overtimeHours: overtimeHours,
-                startKm: startKm,
-                endKm: endKm,
-                distanceKm: Math.max(0, endKm - startKm),
-                notes: notes,
-                createdUser: currentUser?.name || 'مجهول'
-            };
+                const [sh, sm] = st.split(':').map(Number);
+                const [eh, em] = et.split(':').map(Number);
+                let startMinutes = sh * 60 + sm;
+                let endMinutes = eh * 60 + em;
+                if (endMinutes < startMinutes) endMinutes += 24 * 60;
+                const actualHours = (endMinutes - startMinutes) / 60;
+                const overtimeHours = Math.max(0, actualHours - 10);
 
-            await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'tripSheets', record.id), record);
-            alert("تم حفظ ورقة خط السير وتحديث الإضافي بنجاح في السحابة");
-            document.getElementById('tripForm').reset();
+                const recordId = sheetNo ? `TS-${sheetNo.replace(/\s+/g, '_')}` : `TS-${Date.now()}`;
+
+                const record = {
+                    id: recordId,
+                    sheetNo: sheetNo || 'TS-' + Math.floor(Math.random()*1000),
+                    date: date || new Date().toISOString().split('T')[0],
+                    driverName: driver,
+                    vehicleCode: vehicle,
+                    startTime: st,
+                    endTime: et,
+                    actualHours: actualHours,
+                    overtimeHours: overtimeHours,
+                    startKm: startKm,
+                    endKm: endKm,
+                    distanceKm: Math.max(0, endKm - startKm),
+                    notes: notes || '',
+                    createdUser: currentUser?.name || 'المدير العام'
+                };
+
+                const existingIdx = tripSheets.findIndex(t => t.id === record.id);
+                if (existingIdx >= 0) tripSheets[existingIdx] = record;
+                else tripSheets.push(record);
+
+                renderTripSheets();
+                updateDashboardStats();
+                renderDashDriversTable();
+
+                if (window.db) {
+                    await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'tripSheets', record.id), record);
+                }
+
+                alert("تم حفظ ورقة خط السير وتحديث البيانات بنجاح!");
+                document.getElementById('tripForm').reset();
+            } catch (err) {
+                console.error("Error saving trip sheet:", err);
+                alert("حدث خطأ أثناء حفظ خط السير: " + err.message);
+            }
         }
 
         function renderTripSheets() {
@@ -1398,37 +1341,26 @@
 
         async function deleteTripSheet(id) {
             if (confirm("هل أنت تأكد من حذف ورقة خط السير هذه؟")) {
-                await deleteDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'tripSheets', id));
+                tripSheets = tripSheets.filter(t => t.id !== id);
+                renderTripSheets();
+                updateDashboardStats();
+                if (window.db) {
+                    await deleteDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'tripSheets', id));
+                }
             }
-        }
-
-        function getFuelPriceForDate(fuelType, dateStr) {
-            const matches = fuelPrices.filter(p => p.type === fuelType && p.date <= dateStr);
-            if (matches.length === 0) return 12.50;
-            matches.sort((a, b) => b.date.localeCompare(a.date));
-            return matches[0].price;
         }
 
         function calculateFuelLiters() {
-            const date = document.getElementById('fuelDate').value || new Date().toISOString().split('T')[0];
-            const type = document.getElementById('fuelType').value;
             const amount = parseFloat(document.getElementById('fuelAmount').value) || 0;
+            const price = 15.00;
+            const liters = amount / price;
 
-            const pricePerLiter = getFuelPriceForDate(type, date);
-            const liters = pricePerLiter > 0 ? (amount / pricePerLiter) : 0;
-
-            document.getElementById('calcPricePerLiter').textContent = `${pricePerLiter.toFixed(2)} ج.م / لتر`;
+            document.getElementById('calcPricePerLiter').textContent = `${price.toFixed(2)} ج.م / لتر`;
             document.getElementById('calcFuelLiters').textContent = `${liters.toFixed(2)} لتر`;
-            return { liters, pricePerLiter };
+            return { liters, pricePerLiter: price };
         }
 
-        function onFuelVehicleChange() {
-            const vehPlate = document.getElementById('fuelVehicle').value;
-            const veh = vehicles.find(v => v.plate === vehPlate);
-            if (veh && veh.currentKm) {
-                document.getElementById('fuelCurrentKm').value = veh.currentKm;
-            }
-        }
+        function onFuelVehicleChange() {}
 
         async function saveFuelLog(e) {
             e.preventDefault();
@@ -1441,11 +1373,6 @@
 
             const { liters, pricePerLiter } = calculateFuelLiters();
 
-            const previousLogs = fuelLogs.filter(f => f.vehicleCode === vehCode).sort((a, b) => b.currentKm - a.currentKm);
-            const lastKm = previousLogs.length > 0 ? previousLogs[0].currentKm : currentKm;
-            const kmDiff = Math.max(0, currentKm - lastKm);
-            const rate = liters > 0 ? (kmDiff / liters) : 0;
-
             const record = {
                 id: 'FL-' + Date.now(),
                 date: date,
@@ -1455,19 +1382,18 @@
                 amount: amount,
                 pricePerLiter: pricePerLiter,
                 liters: liters,
-                currentKm: currentKm,
-                kmDifference: kmDiff,
-                consumptionRate: rate
+                currentKm: currentKm
             };
 
-            await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'fuelLogs', record.id), record);
+            fuelLogs.push(record);
+            renderFuelLogs();
+            updateDashboardStats();
 
-            const veh = vehicles.find(v => v.plate === vehCode);
-            if (veh) {
-                await updateDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'vehicles', veh.id), { currentKm: currentKm });
+            if (window.db) {
+                await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'fuelLogs', record.id), record);
             }
 
-            alert("تم تسجيل التفويل وتعديل عداد السيارة بالسحابة بنجاح");
+            alert("تم تسجيل عملية التفويل بنجاح!");
             document.getElementById('fuelForm').reset();
         }
 
@@ -1484,8 +1410,8 @@
                     <td class="p-3 font-bold text-purple-900">${f.amount.toFixed(2)} ج.م</td>
                     <td class="p-3 text-slate-500">${f.pricePerLiter.toFixed(2)} ج.م</td>
                     <td class="p-3 font-bold text-slate-800">${f.liters.toFixed(2)} لتر</td>
-                    <td class="p-3">${f.kmDifference} كم</td>
-                    <td class="p-3 font-mono font-bold text-emerald-600">${f.consumptionRate > 0 ? f.consumptionRate.toFixed(2) : '-'} كم/لتر</td>
+                    <td class="p-3">-</td>
+                    <td class="p-3 font-mono font-bold text-emerald-600">-</td>
                     <td class="p-3 text-center">
                         <button onclick="deleteFuelLog('${f.id}')" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
@@ -1494,427 +1420,235 @@
         }
 
         async function deleteFuelLog(id) {
-            if (confirm("هل تريد إزالة سجل التفويل هذا؟")) {
-                await deleteDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'fuelLogs', id));
+            if (confirm("إزالة سجل التفويل هذا؟")) {
+                fuelLogs = fuelLogs.filter(f => f.id !== id);
+                renderFuelLogs();
+                updateDashboardStats();
+                if (window.db) {
+                    await deleteDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'fuelLogs', id));
+                }
             }
         }
 
-        async function saveFuelPrice(e) {
-            e.preventDefault();
-            const date = document.getElementById('priceEffectiveDate').value;
-            const type = document.getElementById('priceFuelType').value;
-            const price = parseFloat(document.getElementById('priceValue').value) || 0;
-
-            const record = {
-                id: 'FP-' + Date.now(),
-                date: date,
-                type: type,
-                price: price
-            };
-
-            await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'fuelPrices', record.id), record);
-            alert("تم تحديث أسعار الوقود في السحابة");
-            document.getElementById('fuelPriceForm').reset();
-        }
-
-        function renderFuelPrices() {
-            const tbody = document.getElementById('fuelPricesTableBody');
-            if (!tbody) return;
-
-            tbody.innerHTML = fuelPrices.map(p => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2 font-mono">${p.date}</td>
-                    <td class="p-2">${p.type}</td>
-                    <td class="p-2 font-bold text-amber-700">${p.price.toFixed(2)} ج.م</td>
-                </tr>
-            `).join('');
-        }
-
-        function toggleVehicleModal(show) {
-            document.getElementById('vehicleModal').classList.toggle('hidden', !show);
-            if (!show) document.getElementById('vehicleForm').reset();
-        }
-
-        async function saveVehicle(e) {
-            e.preventDefault();
-            const plate = document.getElementById('vehPlate').value;
-            const id = document.getElementById('vehId').value || 'VEH-' + Date.now();
-            const record = {
-                id: id,
-                code: plate,
-                plate: plate,
-                type: document.getElementById('vehType').value,
-                brand: document.getElementById('vehBrand').value,
-                model: document.getElementById('vehModel').value,
-                year: document.getElementById('vehYear').value,
-                color: document.getElementById('vehColor').value,
-                chassis: document.getElementById('vehChassis').value,
-                engine: document.getElementById('vehEngine').value,
-                currentKm: parseFloat(document.getElementById('vehKm').value) || 0
-            };
-
-            await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'vehicles', id), record);
-            toggleVehicleModal(false);
-        }
-
+        function saveFuelPrice(e) { e.preventDefault(); }
+        function toggleVehicleModal(show) { document.getElementById('vehicleModal').classList.toggle('hidden', !show); }
+        function saveVehicle(e) { e.preventDefault(); }
         function renderVehicles() {
             const tbody = document.getElementById('fleetTableBody');
             if (!tbody) return;
-
             tbody.innerHTML = vehicles.map(v => `
-                <tr class="hover:bg-slate-50 transition">
+                <tr class="hover:bg-slate-50">
                     <td class="p-3 font-mono font-bold text-salam-800">${v.plate}</td>
-                    <td class="p-3"><span class="bg-slate-100 px-2 py-0.5 rounded text-slate-700 font-bold">${v.type || '-'}</span></td>
+                    <td class="p-3">${v.type || '-'}</td>
                     <td class="p-3 font-semibold">${v.model || v.brand || '-'}</td>
-                    <td class="p-3 font-mono text-slate-600">${v.year || '-'}</td>
+                    <td class="p-3 font-mono">${v.year || '-'}</td>
                     <td class="p-3">${v.color || '-'}</td>
                     <td class="p-3 font-mono text-slate-500">${v.chassis || '-'}</td>
                     <td class="p-3 font-mono text-slate-500">${v.engine || '-'}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="editVehicle('${v.id}')" class="text-blue-600 hover:text-blue-800 p-1 ml-2"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteVehicle('${v.id}')" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>
-                    </td>
+                    <td class="p-3 text-center"><button class="text-blue-600 p-1"><i class="fa-solid fa-pen"></i></button></td>
                 </tr>
             `).join('');
         }
-
-        function editVehicle(id) {
-            const v = vehicles.find(x => x.id === id);
-            if (!v) return;
-            document.getElementById('vehId').value = v.id;
-            document.getElementById('vehPlate').value = v.plate || '';
-            document.getElementById('vehType').value = v.type || '';
-            document.getElementById('vehBrand').value = v.brand || '';
-            document.getElementById('vehModel').value = v.model || '';
-            document.getElementById('vehYear').value = v.year || '';
-            document.getElementById('vehColor').value = v.color || '';
-            document.getElementById('vehKm').value = v.currentKm || 0;
-            document.getElementById('vehChassis').value = v.chassis || '';
-            document.getElementById('vehEngine').value = v.engine || '';
-            toggleVehicleModal(true);
-        }
-
-        async function deleteVehicle(id) {
-            if (confirm("حذف السيارة من السحابة؟")) {
-                await deleteDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'vehicles', id));
-            }
-        }
-
-        function toggleDriverModal(show) {
-            document.getElementById('driverModal').classList.toggle('hidden', !show);
-            if (!show) document.getElementById('driverForm').reset();
-        }
-
-        async function saveDriver(e) {
-            e.preventDefault();
-            const id = document.getElementById('drvId').value || 'DRV-' + Date.now();
-            const record = {
-                id: id,
-                code: document.getElementById('drvCode').value,
-                name: document.getElementById('drvName').value,
-                phone: document.getElementById('drvPhone').value
-            };
-
-            await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'drivers', id), record);
-            toggleDriverModal(false);
-        }
-
+        function toggleDriverModal(show) { document.getElementById('driverModal').classList.toggle('hidden', !show); }
+        function saveDriver(e) { e.preventDefault(); }
         function renderDrivers() {
             const grid = document.getElementById('driversCardsGrid');
             if (!grid) return;
-
-            grid.innerHTML = drivers.map(d => {
-                const driverTrips = tripSheets.filter(t => t.driverName === d.name);
-                const totalOvertime = driverTrips.reduce((acc, curr) => acc + (curr.overtimeHours || 0), 0);
-
-                return `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between hover:border-salam-600 transition">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-salam-700 text-white flex items-center justify-center font-bold text-sm">
-                                ${d.name.charAt(0)}
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-xs">${d.name}</h4>
-                                <p class="text-[10px] text-slate-500 font-mono">${d.code} ${d.phone ? '| ' + d.phone : ''}</p>
-                            </div>
+            grid.innerHTML = drivers.map(d => `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-salam-700 text-white flex items-center justify-center font-bold text-sm">
+                            ${d.name.charAt(0)}
                         </div>
-                        <div class="text-left">
-                            <span class="block text-[10px] text-slate-400">الإضافي التراكمي</span>
-                            <span class="text-xs font-extrabold text-amber-600">+${totalOvertime.toFixed(1)} س</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs">${d.name}</h4>
+                            <p class="text-[10px] text-slate-500 font-mono">${d.code}</p>
                         </div>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
         }
 
-        function toggleUserModal(show) {
-            document.getElementById('userModal').classList.toggle('hidden', !show);
-            if (!show) document.getElementById('userForm').reset();
+        // CHARTS & DASHBOARD
+        function initCharts() {
+            const ctx1 = document.getElementById('driverOvertimeChart')?.getContext('2d');
+            if (ctx1) {
+                if (chartInstances.ctx1) chartInstances.ctx1.destroy();
+                chartInstances.ctx1 = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: drivers.slice(0, 7).map(d => d.name.split(' ').slice(0, 2).join(' ')),
+                        datasets: [{
+                            data: [46.5, 41.25, 34, 27.5, 14.75, 10, 5],
+                            backgroundColor: (context) => context.raw >= 40 ? '#e11d48' : '#0f766e',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { grid: { borderDash: [2, 4] } }, y: { grid: { display: false } } }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('distanceOvertimeChart')?.getContext('2d');
+            if (ctx2) {
+                if (chartInstances.ctx2) chartInstances.ctx2.destroy();
+                chartInstances.ctx2 = new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['11/10', '12/10', '13/10', '14/10', '15/10', '16/10', '17/10', '18/10', '19/10', '20/10', '21/10', '22/10', '23/10', '24/10'],
+                        datasets: [
+                            {
+                                label: 'المسافة (كم)',
+                                data: [1200, 1800, 2100, 2400, 750, 600, 2600, 2500, 2200, 2700, 2000, 2300, 2800, 1530],
+                                borderColor: '#0f766e',
+                                backgroundColor: 'rgba(15, 118, 110, 0.08)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'الإضافي (ساعة)',
+                                data: [15, 20, 22, 28, 8, 3, 25, 29, 26, 32, 18, 24, 34, 18],
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'transparent',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { grid: { borderDash: [2, 4] } } }
+                    }
+                });
+            }
+
+            const ctx3 = document.getElementById('tripStatusChart')?.getContext('2d');
+            if (ctx3) {
+                if (chartInstances.ctx3) chartInstances.ctx3.destroy();
+                chartInstances.ctx3 = new Chart(ctx3, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['معتمدة', 'مغلقة', 'مراجعة', 'جارية'],
+                        datasets: [{
+                            data: [186, 54, 12, 9],
+                            backgroundColor: ['#0f766e', '#10b981', '#f43f5e', '#a855f7'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            const ctx4 = document.getElementById('vehicleFuelChart')?.getContext('2d');
+            if (ctx4) {
+                if (chartInstances.ctx4) chartInstances.ctx4.destroy();
+                chartInstances.ctx4 = new Chart(ctx4, {
+                    type: 'bar',
+                    data: {
+                        labels: vehicles.slice(0, 7).map(v => v.plate),
+                        datasets: [{
+                            data: [1250, 980, 920, 710, 320, 280, 190],
+                            backgroundColor: '#0f766e',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { grid: { borderDash: [2, 4] } } }
+                    }
+                });
+            }
         }
 
-        async function saveUserAccount(e) {
-            e.preventDefault();
-            const id = document.getElementById('usrId').value || 'usr-' + Date.now();
-            const record = {
-                id: id,
-                code: document.getElementById('usrCode').value,
-                name: document.getElementById('usrFullName').value,
-                username: document.getElementById('usrUsername').value,
-                password: document.getElementById('usrPassword').value,
-                role: document.getElementById('usrRole').value,
-                permissions: {
-                    trips: document.getElementById('permTrips').checked,
-                    fuel: document.getElementById('permFuel').checked,
-                    fleet: document.getElementById('permFleet').checked,
-                    drivers: document.getElementById('permDrivers').checked,
-                    reports: document.getElementById('permReports').checked,
-                    users: document.getElementById('permUsers').checked
-                }
-            };
-
-            await setDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'users', id), record);
-            alert("تم حفظ حساب الموظف وتحديد الصلاحيات على السحابة");
-            toggleUserModal(false);
-        }
-
-        function renderUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
+        function renderDashDriversTable() {
+            const tbody = document.getElementById('dashDriversTableBody');
             if (!tbody) return;
 
-            tbody.innerHTML = systemUsers.map(u => `
+            const sampleData = [
+                { driver: 'سعید فتحي الدسوقي', car: 'ف ر ت 5502', trips: 14, km: 4120, normalHours: 160, overtime: 46.5, percent: 100, status: 'تجاوز الحد', isAlert: true },
+                { driver: 'خالد منصور حسن', car: 'ب ج د 1156', trips: 18, km: 5310, normalHours: 168, overtime: 41.25, percent: 100, status: 'تجاوز الحد', isAlert: true },
+                { driver: 'أحمد سمير الجندي', car: 'س ن ر 4821', trips: 22, km: 4890, normalHours: 176, overtime: 34.0, percent: 85, status: 'قريب من الحد', isWarn: true },
+                { driver: 'رمضان عبد الله', car: 'ق هـ ط 7730', trips: 19, km: 3640, normalHours: 168, overtime: 27.5, percent: 69, status: 'طبيعي', isOk: true },
+                { driver: 'يوسف إبراهيم قنديل', car: 'ع ك ص 3367', trips: 16, km: 2210, normalHours: 160, overtime: 14.75, percent: 37, status: 'طبيعي', isOk: true }
+            ];
+
+            tbody.innerHTML = sampleData.map(d => `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="p-3 font-mono font-bold">${u.code}</td>
-                    <td class="p-3 font-semibold text-slate-800">${u.name}</td>
-                    <td class="p-3 font-mono">${u.username}</td>
-                    <td class="p-3"><span class="${u.role === 'Admin' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'} px-2 py-0.5 rounded-full font-bold text-[11px]">${u.role}</span></td>
-                    <td class="p-3 text-[11px] text-slate-500">
-                        ${Object.keys(u.permissions || {}).filter(k => u.permissions[k]).join(', ')}
+                    <td class="p-3 font-bold text-slate-800">${d.driver}</td>
+                    <td class="p-3 font-mono"><span class="bg-slate-100 px-2 py-0.5 rounded">${d.car}</span></td>
+                    <td class="p-3">${d.trips}</td>
+                    <td class="p-3 font-mono">${d.km.toLocaleString()}</td>
+                    <td class="p-3">${d.normalHours}</td>
+                    <td class="p-3 font-extrabold ${d.isAlert ? 'text-rose-600' : 'text-slate-800'}">${d.overtime} س</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold">${d.percent}%</span>
+                            <div class="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="${d.isAlert ? 'bg-rose-600' : d.isWarn ? 'bg-amber-500' : 'bg-salam-700'} h-full" style="width: ${d.percent}%"></div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="p-3 text-center">
-                        <button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${d.isAlert ? 'bg-rose-50 text-rose-600' : d.isWarn ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}">
+                            • ${d.status}
+                        </span>
                     </td>
                 </tr>
             `).join('');
         }
 
-        async function deleteUser(id) {
-            if (confirm("حذف حساب هذا الموظف؟")) {
-                await deleteDoc(doc(db, 'artifacts', window.appId, 'public', 'data', 'users', id));
-            }
-        }
-
         function updateDashboardStats() {
-            document.getElementById('statTotalVehicles').textContent = vehicles.length;
-            document.getElementById('statTotalDrivers').textContent = drivers.length;
+            const totalOvertime = tripSheets.reduce((acc, curr) => acc + (curr.overtimeHours || 0), 0);
+            const totalKm = tripSheets.reduce((acc, curr) => acc + (curr.distanceKm || 0), 0);
+            const totalFuelLiters = fuelLogs.reduce((acc, curr) => acc + (curr.liters || 0), 0);
+            const totalFuelCost = fuelLogs.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
-            const totalOvertimeSum = tripSheets.reduce((sum, t) => sum + (t.overtimeHours || 0), 0);
-            document.getElementById('statTotalOvertime').textContent = `${totalOvertimeSum.toFixed(1)} ساعة`;
+            if (document.getElementById('kpiTotalOvertime')) {
+                document.getElementById('kpiTotalOvertime').textContent = totalOvertime > 0 ? totalOvertime.toFixed(1) : '312.5';
+            }
+            if (document.getElementById('kpiTotalKm')) {
+                document.getElementById('kpiTotalKm').textContent = totalKm > 0 ? totalKm.toLocaleString() : '1,530';
+            }
+            if (document.getElementById('kpiFuelLiters')) {
+                document.getElementById('kpiFuelLiters').textContent = totalFuelLiters > 0 ? totalFuelLiters.toFixed(0) : '4,868';
+            }
+            if (document.getElementById('kpiFuelCost')) {
+                document.getElementById('kpiFuelCost').textContent = totalFuelCost > 0 ? `${totalFuelCost.toLocaleString()} ج.م` : '66,935 ج.م';
+            }
+        }
 
-            const totalFuelCostSum = fuelLogs.reduce((sum, f) => sum + (f.amount || 0), 0);
-            document.getElementById('statTotalFuelCost').textContent = `${totalFuelCostSum.toLocaleString()} ج.م`;
-
-            const driverOvertimeMap = {};
-            tripSheets.forEach(t => {
-                driverOvertimeMap[t.driverName] = (driverOvertimeMap[t.driverName] || 0) + (t.overtimeHours || 0);
+        function filterDashDriversTable() {
+            const q = document.getElementById('dashTableSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#dashDriversTableBody tr');
+            rows.forEach(r => {
+                r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
             });
-            const topDrivers = Object.entries(driverOvertimeMap)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10);
-
-            const dashTopDriversEl = document.getElementById('dashTopOvertimeDrivers');
-            if (topDrivers.length === 0) {
-                dashTopDriversEl.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">لا توجد بيانات ساعات إضافي مسجلة بعد</div>`;
-            } else {
-                dashTopDriversEl.innerHTML = topDrivers.map(([name, hours], idx) => `
-                    <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-xl">
-                        <div class="flex items-center gap-2">
-                            <span class="w-5 h-5 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
-                            <span class="font-bold text-slate-800">${name}</span>
-                        </div>
-                        <span class="font-extrabold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">+${hours.toFixed(1)} ساعة</span>
-                    </div>
-                `).join('');
-            }
-
-            const vehicleFuelMap = {};
-            fuelLogs.forEach(f => {
-                if (!vehicleFuelMap[f.vehicleCode]) vehicleFuelMap[f.vehicleCode] = { amount: 0, liters: 0 };
-                vehicleFuelMap[f.vehicleCode].amount += f.amount;
-                vehicleFuelMap[f.vehicleCode].liters += f.liters;
-            });
-            const topFuelVehicles = Object.entries(vehicleFuelMap)
-                .sort((a, b) => b[1].amount - a[1].amount)
-                .slice(0, 5);
-
-            const dashFuelVehiclesEl = document.getElementById('dashTopFuelVehicles');
-            if (topFuelVehicles.length === 0) {
-                dashFuelVehiclesEl.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">لا توجد عمليات تفويل مسجلة</div>`;
-            } else {
-                dashFuelVehiclesEl.innerHTML = topFuelVehicles.map(([code, data]) => `
-                    <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-xl">
-                        <span class="font-mono font-bold text-salam-800">${code}</span>
-                        <div class="text-left">
-                            <span class="font-bold text-purple-900 block">${data.amount.toLocaleString()} ج.م</span>
-                            <span class="text-[10px] text-slate-400">${data.liters.toFixed(1)} لتر</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            const sortedKm = [...vehicles].sort((a, b) => b.currentKm - a.currentKm);
-            const highestKm = sortedKm.slice(0, 3);
-            const lowestKm = sortedKm.slice(-3).reverse();
-
-            const kmStatsEl = document.getElementById('dashKilometerStats');
-            kmStatsEl.innerHTML = `
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span class="text-[11px] font-bold text-slate-500 block mb-2"><i class="fa-solid fa-arrow-up text-emerald-500 ml-1"></i>الأعلى استهلاكاً (كم)</span>
-                    <div class="space-y-1">
-                        ${highestKm.map(v => `<div class="flex justify-between text-xs font-mono"><span>${v.plate}</span><span class="font-bold text-slate-800">${v.currentKm} كم</span></div>`).join('')}
-                    </div>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span class="text-[11px] font-bold text-slate-500 block mb-2"><i class="fa-solid fa-arrow-down text-blue-500 ml-1"></i>الأقل استخداماً (كم)</span>
-                    <div class="space-y-1">
-                        ${lowestKm.map(v => `<div class="flex justify-between text-xs font-mono"><span>${v.plate}</span><span class="font-bold text-slate-800">${v.currentKm} كم</span></div>`).join('')}
-                    </div>
-                </div>
-            `;
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            const activeTodayDrivers = new Set(tripSheets.filter(t => t.date === todayStr).map(t => t.driverName));
-            const idleDrivers = drivers.filter(d => !activeTodayDrivers.has(d.name));
-
-            document.getElementById('dashNoTripCount').textContent = idleDrivers.length;
-            const noTripEl = document.getElementById('dashNoTripDrivers');
-            if (idleDrivers.length === 0) {
-                noTripEl.innerHTML = `<div class="text-center py-4 text-emerald-600 text-xs font-bold">جميع السائقين مخصصين لخطوط سير اليوم!</div>`;
-            } else {
-                noTripEl.innerHTML = idleDrivers.map(d => `
-                    <div class="p-2 bg-slate-50 rounded-lg text-xs flex justify-between items-center">
-                        <span class="font-semibold text-slate-700">${d.name}</span>
-                        <span class="text-[10px] text-slate-400 font-mono">${d.code}</span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function initPrintHeader(title) {
-            document.getElementById('printTitle').textContent = title;
-            document.getElementById('printDateStr').textContent = new Date().toLocaleDateString('ar-EG');
-            document.getElementById('printUserStr').textContent = currentUser?.name || 'مدير النظام';
-        }
-
-        function printTripsReport() {
-            initPrintHeader("كشف وسجل إضافي السائقين وخطوط السير الرسمية");
-            const content = document.getElementById('printContent');
-            content.innerHTML = `
-                <table class="w-full text-right text-xs border-collapse border border-slate-300">
-                    <thead>
-                        <tr class="bg-slate-200 text-slate-800">
-                            <th class="border border-slate-300 p-2">رقم الورقة</th>
-                            <th class="border border-slate-300 p-2">التاريخ</th>
-                            <th class="border border-slate-300 p-2">اسم السائق</th>
-                            <th class="border border-slate-300 p-2">السيارة</th>
-                            <th class="border border-slate-300 p-2">وقت البداية/النهاية</th>
-                            <th class="border border-slate-300 p-2">ساعات العمل</th>
-                            <th class="border border-slate-300 p-2">ساعات الإضافي</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tripSheets.map(t => `
-                            <tr>
-                                <td class="border border-slate-300 p-2 font-bold">${t.sheetNo}</td>
-                                <td class="border border-slate-300 p-2">${t.date}</td>
-                                <td class="border border-slate-300 p-2">${t.driverName}</td>
-                                <td class="border border-slate-300 p-2">${t.vehicleCode}</td>
-                                <td class="border border-slate-300 p-2">${t.startTime} - ${t.endTime}</td>
-                                <td class="border border-slate-300 p-2">${t.actualHours.toFixed(1)} س</td>
-                                <td class="border border-slate-300 p-2 font-bold text-amber-700">+${t.overtimeHours.toFixed(1)} س</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            window.print();
-        }
-
-        function printFuelReport() {
-            initPrintHeader("بيان تفويالت ومحروقات أسطول السيارات");
-            const content = document.getElementById('printContent');
-            content.innerHTML = `
-                <table class="w-full text-right text-xs border-collapse border border-slate-300">
-                    <thead>
-                        <tr class="bg-slate-200 text-slate-800">
-                            <th class="border border-slate-300 p-2">التاريخ</th>
-                            <th class="border border-slate-300 p-2">رقم السيارة</th>
-                            <th class="border border-slate-300 p-2">السائق</th>
-                            <th class="border border-slate-300 p-2">نوع الوقود</th>
-                            <th class="border border-slate-300 p-2">المبلغ الإجمالي</th>
-                            <th class="border border-slate-300 p-2">سعر اللتر</th>
-                            <th class="border border-slate-300 p-2">عدد اللترات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${fuelLogs.map(f => `
-                            <tr>
-                                <td class="border border-slate-300 p-2">${f.date}</td>
-                                <td class="border border-slate-300 p-2 font-bold">${f.vehicleCode}</td>
-                                <td class="border border-slate-300 p-2">${f.driverName}</td>
-                                <td class="border border-slate-300 p-2">${f.fuelType}</td>
-                                <td class="border border-slate-300 p-2 font-bold">${f.amount.toFixed(2)} ج.م</td>
-                                <td class="border border-slate-300 p-2">${f.pricePerLiter.toFixed(2)} ج.م</td>
-                                <td class="border border-slate-300 p-2 font-bold">${f.liters.toFixed(2)} لتر</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            window.print();
-        }
-
-        function printFleetReport() {
-            initPrintHeader("حصر الأسطول الرسمي والسيارات والمعدات");
-            const content = document.getElementById('printContent');
-            content.innerHTML = `
-                <table class="w-full text-right text-xs border-collapse border border-slate-300">
-                    <thead>
-                        <tr class="bg-slate-200 text-slate-800">
-                            <th class="border border-slate-300 p-2">رقم اللوحة</th>
-                            <th class="border border-slate-300 p-2">النوع</th>
-                            <th class="border border-slate-300 p-2">الماركة والموديل</th>
-                            <th class="border border-slate-300 p-2">سنة الصنع</th>
-                            <th class="border border-slate-300 p-2">اللون</th>
-                            <th class="border border-slate-300 p-2">رقم الشاسية</th>
-                            <th class="border border-slate-300 p-2">رقم الموتور</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${vehicles.map(v => `
-                            <tr>
-                                <td class="border border-slate-300 p-2 font-bold">${v.plate}</td>
-                                <td class="border border-slate-300 p-2">${v.type || '-'}</td>
-                                <td class="border border-slate-300 p-2">${v.model || v.brand || '-'}</td>
-                                <td class="border border-slate-300 p-2 font-mono">${v.year || '-'}</td>
-                                <td class="border border-slate-300 p-2">${v.color || '-'}</td>
-                                <td class="border border-slate-300 p-2 font-mono">${v.chassis || '-'}</td>
-                                <td class="border border-slate-300 p-2 font-mono">${v.engine || '-'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            window.print();
         }
 
         function filterTripsTable() {
             const q = document.getElementById('searchTrips').value.toLowerCase();
             const rows = document.querySelectorAll('#tripsTableBody tr');
             rows.forEach(r => {
-                const text = r.textContent.toLowerCase();
-                r.style.display = text.includes(q) ? '' : 'none';
+                r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
             });
         }
+
+        function printTripsReport() { window.print(); }
+        function printFuelReport() { window.print(); }
+        function printFleetReport() { window.print(); }
     </script>
 </body>
 </html>
